@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudFlare资源共享平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 2px dashed #dee2e6;
+        }
+        
+        .upload-section h2 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+        
+        .upload-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+        
+        .resources-section {
+            margin-top: 30px;
+        }
+        
+        .resources-section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .resource-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        
+        .resource-type {
+            display: inline-block;
+            background: #4facfe;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .resource-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        
+        .resource-desc {
+            color: #6c757d;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .resource-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .download-btn:hover {
+            background: #218838;
+        }
+        
+        .instructions {
+            background: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        @media (max-width: 768px) {
+            .resources-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>☁️ CloudFlare 资源共享平台</h1>
+            <p>安全、高效、便捷的资源共享空间</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <h2>📤 上传资源</h2>
+                <form class="upload-form" id="uploadForm">
+                    <div class="form-group">
+                        <label for="resourceName">资源名称</label>
+                        <input type="text" id="resourceName" placeholder="请输入资源名称" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="resourceType">资源类型</label>
+                        <select id="resourceType" required>
+                            <option value="">请选择资源类型</option>
+                            <option value="文档">文档</option>
+                            <option value="图片">图片</option>
+                            <option value="视频">视频</option>
+                            <option value="音频">音频</option>
+                            <option value="软件">软件</option>
+                            <option value="代码">代码</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="resourceDesc">资源描述</label>
+                        <textarea id="resourceDesc" rows="3" placeholder="请输入资源描述" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="resourceFile">选择文件</label>
+                        <input type="file" id="resourceFile" required>
+                    </div>
+                    
+                    <button type="submit" class="upload-btn">🚀 上传资源</button>
+                </form>
+            </div>
+            
+            <div class="resources-section">
+                <h2>📚 热门资源</h2>
+                
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="搜索资源...">
+                </div>
+                
+                <div class="resources-grid" id="resourcesGrid">
+                    <!-- 资源卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>ℹ️ 使用说明</h3>
+                <ul>
+                    <li>所有上传的资源都将通过CloudFlare进行安全保护和加速分发</li>
+                    <li>资源上传后会自动进行安全扫描，确保内容安全</li>
+                    <li>使用搜索功能快速找到您需要的资源</li>
+                    <li>点击下载按钮即可获取资源，无需注册登录</li>
+                    <li>支持多种文件格式，包括文档、图片、视频、音频等</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟资源数据
+        let resources = [
+            {
+                id: 1,
+                name: "React开发指南",
+                type: "文档",
+                desc: "React框架完整开发指南，包含基础到高级内容",
+                size: "2.5MB",
+                date: "2024-01-15",
+                downloads: 156
+            },
+            {
+                id: 2,
+                name: "风景图片集",
+                type: "图片",
+                desc: "高清自然风景图片合集，适用于背景和设计",
+                size: "15.2MB",
+                date: "2024-01-14",
+                downloads: 89
+            },
+            {
+                id: 3,
+                name: "JavaScript基础教程",
+                type: "视频",
+                desc: "JavaScript入门到精通视频教程，共20课时",
+                size: "850MB",
+                date: "2024-01-13",
+                downloads: 234
+            },
+            {
+                id: 4,
+                name: "轻音乐合集",
+                type: "音频",
+                desc: "精选轻音乐合集，适合工作和学习背景音乐",
+                size: "120MB",
+                date: "2024-01-12",
+                downloads: 67
+            },
+            {
+                id: 5,
+                name: "Python数据处理工具",
+                type: "软件",
+                desc: "Python数据分析和处理工具包，包含常用库",
+                size: "50MB",
+                date: "2024-01-11",
+                downloads: 143
+            },
+            {
+                id: 6,
+                name: "Vue.js项目模板",
+                type: "代码",
+                desc: "Vue.js现代化项目模板，包含路由和状态管理",
+                size: "3.2MB",
+                date: "2024-01-10",
+                downloads: 178
+            }
+        ];
+
+        // 渲染资源列表
+        function renderResources(resourcesToRender) {
+            const grid = document.getElementById('resourcesGrid');
+            grid.innerHTML = '';
+            
+            resourcesToRender.forEach(resource => {
+                const card = document.createElement('div');
+                card.className = 'resource-card';
+                card.innerHTML = `
+                    <div class="resource-type">${resource.type}</div>
+                    <div class="resource-title">${resource.name}</div>
+                    <div class="resource-desc">${resource.desc}</div>
+                    <div class="resource-meta">
+                        <span>${resource.size} • ${resource.date}</span>
+                        <button class="download-btn" onclick="downloadResource(${resource.id})">📥 下载</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 下载资源函数
+        function downloadResource(id) {
+            const resource = resources.find(r => r.id === id);
+            if (resource) {
+                alert(`正在下载: ${resource.name}\n\n注意: 这是一个演示，实际环境中将通过CloudFlare进行资源分发。`);
+                // 模拟下载计数
+                console.log(`资源 ${resource.name} 下载请求已发送`);
+            }
+        }
+
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = resources.filter(resource => 
+                resource.name.toLowerCase().includes(searchTerm) ||
+                resource.desc.toLowerCase().includes(searchTerm) ||
+                resource.type.toLowerCase().includes(searchTerm)
+            );
+            renderResources(filtered);
+        });
+
+        // 上传表单提交
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('resourceName').value;
+            const type = document.getElementById('resourceType').value;
+            const desc = document.getElementById('resourceDesc').value;
+            
+            // 创建新资源
+            const newResource = {
+                id: resources.length + 1,
+                name: name,
+                type: type,
+                desc: desc,
+                size: "待计算",
+                date: new Date().toISOString().split('T')[0],
+                downloads: 0
+            };
+            
+            resources.unshift(newResource);
+            renderResources(resources);
+            
+            // 重置表单
+            this.reset();
+            
+            alert('资源上传成功！资源将通过CloudFlare进行安全分发。');
+        });
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            renderResources(resources);
+        });
+    </script>
+</body>
+</html>
